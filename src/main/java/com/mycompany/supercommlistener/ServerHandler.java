@@ -6,13 +6,8 @@
 package com.mycompany.supercommlistener;
 
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.ByteBufUtil;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.util.CharsetUtil;
-import io.netty.util.NettyRuntime;
-import io.netty.util.internal.StringUtil;
 import java.util.Scanner;
 
 /**
@@ -21,15 +16,23 @@ import java.util.Scanner;
  */
 public class ServerHandler extends ChannelInboundHandlerAdapter {
 
-    public void waitCommand(ChannelHandlerContext ctx) {
-        Scanner s = new Scanner(System.in);
-        String command = s.next();
-        System.out.println("Send command (press Q for exit)");
-        if (!command.toUpperCase().equals("Q")) {
-            ByteBuf b = ctx.alloc().buffer();
-            b.writeBytes(hexStringToByteArray(command));
-            ctx.write(b);
-        }
+    private final boolean waitAfterConnect;
+
+    public ServerHandler(boolean waitAfterConnect) {
+        this.waitAfterConnect = waitAfterConnect;
+    }
+
+    public void waitCommand(final ChannelHandlerContext ctx) {
+        new Thread(() -> {
+            Scanner s = new Scanner(System.in);
+            String command = s.next();
+            System.out.println("Send command (press Q for exit)");
+            if (!command.toUpperCase().equals("Q")) {
+                ByteBuf b = ctx.alloc().buffer();
+                b.writeBytes(hexStringToByteArray(command));
+                ctx.write(b);
+            }
+        }).start();
     }
 
     public static byte[] hexStringToByteArray(String s) {
@@ -48,6 +51,9 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
         ByteBuf b = ctx.alloc().buffer();
         ctx.writeAndFlush(b);
         System.out.println("Device connected");
+        if (waitAfterConnect) {
+            waitCommand(ctx);
+        }
     }
 
     public void channelRead(ChannelHandlerContext ctx, Object msg) {

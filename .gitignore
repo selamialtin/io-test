@@ -19,3 +19,13 @@ hs_err_pid*
 target
 .gradle
 build
+
+# netbeans 
+nbactions.xml
+
+# snap files
+parts
+prime
+snap
+stage
+*.snap

@@ -41,7 +41,7 @@ public class Client implements Runnable {
             clientBootstrap.handler(new ChannelInitializer<SocketChannel>() {
                 protected void initChannel(SocketChannel socketChannel) throws Exception {
                     socketChannel.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
-                    socketChannel.pipeline().addLast(new ServerHandler());
+                    socketChannel.pipeline().addLast(new ServerHandler(true));
                 }
             });
             ChannelFuture channelFuture = clientBootstrap.connect().sync();

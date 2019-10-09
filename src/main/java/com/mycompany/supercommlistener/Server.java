@@ -39,7 +39,7 @@ public class Server implements Runnable{
                         @Override
                         protected void initChannel(Channel c) throws Exception {
                             c.pipeline().addLast(new LoggingHandler(LogLevel.INFO));
-                            c.pipeline().addLast(new ServerHandler());
+                            c.pipeline().addLast(new ServerHandler(false));
                         }
                     })
                     .option(ChannelOption.SO_BACKLOG, 128)

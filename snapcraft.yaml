@@ -1,35 +1,28 @@
+# docker run --rm -it -v $PWD:/project -w /project snapcore/snapcraft:stable snapcraft clean
+# docker run --rm -it -v $PWD:/project -w /project snapcore/snapcraft:stable snapcraft
 name: test-io-uziot
 version: '0.0.1.alpha'
-summary: |
-  Application for Mind Mapping, Knowledge
-  and Project Management
-description: |
-  Freeplane is a free and open source software
-  application that supports thinking, sharing
-  information and getting things done at work,
-  in school and at home. The core of the
-  software is tools for mind mapping (also known
-  as concept mapping or information mapping)
-  and using mapped information.
+summary: Application for simple socket and io console app
+description: Test IO UZIOT is a free and open source software application that sending and receiving binary data over socket and io on console app.
 
 confinement: devmode
 
-parts:
-  test-io-uziot:
-    after: [desktop-glib-only]
-    plugin: maven
-    source: .
-    build: |
-      export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
-      maven install
-    install: |
-      unzip DIST/freeplane_bin-*.zip -d \
-      $SNAPCRAFT_PART_INSTALL/
-    build-packages:
-      - unzip
-      - openjdk-8-jdk
-
 apps:
   test-io-uziot:
-    command: desktop-launch \
-      $SNAP/freeplane-1.6.10/freeplane.sh
+    command: bin/IOTestStarter.sh
+
+parts:
+  test-io-uziot:
+    source: .
+    plugin: dump
+    organize:
+      target/test-io-uziot-1.0-SNAPSHOT-jar-with-dependencies.jar: bin/IOTestStarter.jar
+      snap-files/IOTestStarter.sh: bin/IOTestStarter.sh
+      snap-files/rxtx-linux-x86_64/librxtxParallel.so: bin/jre/librxtxParallel.so
+      snap-files/rxtx-linux-x86_64/librxtxSerial.so: bin/jre/librxtxSerial.so
+      snap-files/rxtx-linux-x86_64/RXTXcomm.jar: bin/jre-ext/RXTXcomm.jar
+    build-packages:
+    - ca-certificates
+    - ca-certificates-java
+    - openjdk-8-jre-headless
+    stage-packages: [openjdk-8-jre-headless]

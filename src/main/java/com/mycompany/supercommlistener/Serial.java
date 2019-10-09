@@ -14,16 +14,20 @@ import io.netty.channel.rxtx.RxtxChannel;
 import io.netty.channel.rxtx.RxtxChannelConfig;
 import io.netty.channel.rxtx.RxtxChannelOption;
 import io.netty.channel.rxtx.RxtxDeviceAddress;
+import io.netty.handler.logging.LogLevel;
+import io.netty.handler.logging.LoggingHandler;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class Serial implements Runnable {
 
-    private final String port;
+    private final Map<String, String> params;
+    
 
-    public Serial(String port) {
+    public Serial(Map<String, String> params) {
 
-        this.port = port;
+        this.params = params;
     }
 
     @Override
@@ -35,9 +39,11 @@ public class Serial implements Runnable {
 
             b.group(group)
                     .channel(RxtxChannel.class)
-                    .option(RxtxChannelOption.BAUD_RATE, 115200)
-                    .option(RxtxChannelOption.DATA_BITS, RxtxChannelConfig.Databits.DATABITS_8)
-                    .option(RxtxChannelOption.PARITY_BIT, RxtxChannelConfig.Paritybit.NONE)
+                    .option(RxtxChannelOption.BAUD_RATE, Integer.parseInt(params.get(Main.PARAM_BAUD)))
+                    .option(RxtxChannelOption.DATA_BITS, RxtxChannelConfig.Databits.valueOf(Integer.parseInt(params.get(Main.PARAM_DATABIT))))
+                    .option(RxtxChannelOption.STOP_BITS, RxtxChannelConfig.Stopbits.valueOf(Integer.parseInt(params.get(Main.PARAM_STOPBIT))))
+                    .option(RxtxChannelOption.PARITY_BIT, RxtxChannelConfig.Paritybit.valueOf(Integer.parseInt(params.get(Main.PARAM_PARITY))))
+
                     .handler(new ChannelInitializer<RxtxChannel>() {
                         @Override
                         public void initChannel(RxtxChannel ch) throws Exception {
@@ -45,12 +51,14 @@ public class Serial implements Runnable {
 //                                    new LineBasedFrameDecoder(32768),
 //                                    new StringEncoder(),
 //                                    new StringDecoder(),
-                                    new ServerHandler()
-                            );
-                        }
+                            new LoggingHandler(LogLevel.INFO),
+                            new ServerHandler(true)
+                        
+                    );
+            }
                     });
 
-            ChannelFuture f = b.connect(new RxtxDeviceAddress(port)).sync();
+            ChannelFuture f = b.connect(new RxtxDeviceAddress(params.get(Main.PARAM_SERIAL))).sync();
             f.channel().closeFuture().sync();
         } catch (InterruptedException ex) {
             Logger.getLogger(Serial.class.getName()).log(Level.SEVERE, null, ex);
