@@ -1,0 +1,35 @@
+name: test-io-uziot
+version: '0.0.1.alpha'
+summary: |
+  Application for Mind Mapping, Knowledge
+  and Project Management
+description: |
+  Freeplane is a free and open source software
+  application that supports thinking, sharing
+  information and getting things done at work,
+  in school and at home. The core of the
+  software is tools for mind mapping (also known
+  as concept mapping or information mapping)
+  and using mapped information.
+
+confinement: devmode
+
+parts:
+  test-io-uziot:
+    after: [desktop-glib-only]
+    plugin: maven
+    source: .
+    build: |
+      export JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
+      maven install
+    install: |
+      unzip DIST/freeplane_bin-*.zip -d \
+      $SNAPCRAFT_PART_INSTALL/
+    build-packages:
+      - unzip
+      - openjdk-8-jdk
+
+apps:
+  test-io-uziot:
+    command: desktop-launch \
+      $SNAP/freeplane-1.6.10/freeplane.sh
