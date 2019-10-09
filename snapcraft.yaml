@@ -1,5 +1,7 @@
 # docker run --rm -it -v $PWD:/project -w /project snapcore/snapcraft:stable snapcraft clean
 # docker run --rm -it -v $PWD:/project -w /project snapcore/snapcraft:stable snapcraft
+# snapcraft push --release edge *.snap
+
 name: test-io-uziot
 version: '0.0.1.alpha'
 summary: Application for simple socket and io console app
