@@ -11,7 +11,13 @@ confinement: devmode
 
 apps:
   test-io-uziot:
-    command: bin/IOTestStarter.sh
+#    command: bin/IOTestStarter.sh
+    command: ulimit -c unlimited
+    command: usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java -Djava.library.path=$SNAP/bin/jre/ -cp $SNAP/bin/IOTestStarter.jar:$SNAP/bin/jre-ext/RXTXcomm.jar com.mycompany.supercommlistener.Main
+    environment:
+      JAVA_HOME: $SNAP/usr/lib/jvm/default-java
+      PATH: $SNAP/usr/lib/jvm/default-java/bin:$PATH
+    plugs: [home]
 
 parts:
   test-io-uziot:
@@ -20,9 +26,8 @@ parts:
     organize:
       target/test-io-uziot-1.0-SNAPSHOT-jar-with-dependencies.jar: bin/IOTestStarter.jar
       snap-files/IOTestStarter.sh: bin/IOTestStarter.sh
-      snap-files/rxtx-linux-x86_64/librxtxParallel.so: bin/jre/librxtxParallel.so
-      snap-files/rxtx-linux-x86_64/librxtxSerial.so: bin/jre/librxtxSerial.so
-      snap-files/rxtx-linux-x86_64/RXTXcomm.jar: bin/jre-ext/RXTXcomm.jar
+      snap-files/x86_64_rxtx/librxtxSerial.so: bin/jre/librxtxSerial.so
+      snap-files/x86_64_rxtx/RXTXcomm.jar: bin/jre-ext/RXTXcomm.jar
     build-packages:
     - ca-certificates
     - ca-certificates-java

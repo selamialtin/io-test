@@ -17,32 +17,47 @@ import java.util.Scanner;
 public class ServerHandler extends ChannelInboundHandlerAdapter {
 
     private final boolean waitAfterConnect;
+    private Thread lastListener;
 
     public ServerHandler(boolean waitAfterConnect) {
         this.waitAfterConnect = waitAfterConnect;
     }
 
     public void waitCommand(final ChannelHandlerContext ctx) {
-        new Thread(() -> {
-            Scanner s = new Scanner(System.in);
-            String command = s.next();
-            System.out.println("Send command (press Q for exit)");
-            if (!command.toUpperCase().equals("Q")) {
-                ByteBuf b = ctx.alloc().buffer();
-                b.writeBytes(hexStringToByteArray(command));
-                ctx.write(b);
-            }
-        }).start();
+        System.out.println("Waiting input for sending (press Q for exit)");
+        if (lastListener == null || !lastListener.isAlive()) {
+            lastListener = new Thread(() -> {
+                Scanner s = new Scanner(System.in);
+                while (s.hasNext()) {
+                    String command = s.next();
+                    if (!command.toUpperCase().equals("Q")) {
+                        ByteBuf b = ctx.alloc().buffer();
+                        b.writeBytes(hexStringToByteArray(command));
+                        ctx.write(b);
+                    } else {
+                        System.out.println("Waiting for read");
+                        s.close();
+                        break;
+                    }
+                }
+            });
+
+            lastListener.start();
+        }
     }
 
     public static byte[] hexStringToByteArray(String s) {
-        int len = s.length();
-        byte[] data = new byte[len / 2];
-        for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
-                    + Character.digit(s.charAt(i + 1), 16));
+        try {
+            int len = s.length();
+            byte[] data = new byte[len / 2];
+            for (int i = 0; i < len; i += 2) {
+                data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4)
+                        + Character.digit(s.charAt(i + 1), 16));
+            }
+            return data;
+        } catch (Exception ex) {
+            return new byte[]{};
         }
-        return data;
     }
 
     @Override
