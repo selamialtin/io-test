@@ -7,19 +7,15 @@ package com.mycompany.supercommlistener;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelInboundHandlerAdapter;
+import io.netty.channel.SimpleChannelInboundHandler;
 import java.util.Scanner;
 
-/**
- *
- * @author selami
- */
-public class ServerHandler extends ChannelInboundHandlerAdapter {
+public class RxClientHandler extends SimpleChannelInboundHandler<String> {
 
     private final boolean waitAfterConnect;
     private Thread lastListener;
 
-    public ServerHandler(boolean waitAfterConnect) {
+    public RxClientHandler(boolean waitAfterConnect) {
         this.waitAfterConnect = waitAfterConnect;
     }
 
@@ -61,32 +57,17 @@ public class ServerHandler extends ChannelInboundHandlerAdapter {
     }
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
-        super.channelActive(ctx); //To change body of generated methods, choose Tools | Templates.
-        ByteBuf b = ctx.alloc().buffer();
-        ctx.writeAndFlush(b);
+    public void channelActive(ChannelHandlerContext ctx) {
+        ctx.writeAndFlush("AT\n");
         System.out.println("Device connected");
         if (waitAfterConnect) {
             waitCommand(ctx);
         }
     }
 
-    public void channelRead(ChannelHandlerContext ctx, Object msg) {
-        ByteBuf in = (ByteBuf) msg;
-//        System.out.println("Server received: " + in.readableBytes());
-//        System.out.println(ByteBufUtil.hexDump(in));
-        in.release();
-        waitCommand(ctx);
-    }
-
     @Override
-    public void channelReadComplete(ChannelHandlerContext ctx) throws Exception {
-        super.channelReadComplete(ctx); //To change body of generated methods, choose Tools | Templates.
-        ctx.flush();
-    }
-
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-        ctx.close();
+    protected void channelRead0(ChannelHandlerContext ctx, String msg) throws Exception {
+        System.out.println("Serial port responded with : " + msg);
+        waitCommand(ctx);
     }
 }
